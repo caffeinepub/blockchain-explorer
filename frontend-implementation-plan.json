@@ -1,293 +1,74 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Matka Pro - Advanced Matka Gambling App Frontend Implementation",
+  "title": "Display game results for all markets",
   "requirements": [
     {
       "id": "REQ-2",
-      "summary": "Create Admin panel page with result declaration, market management, deposit/withdrawal approval, and platform statistics",
+      "summary": "Display the latest declared game results for each market on the Market Lobby page",
       "acceptanceCriteria": [
-        "Admin panel is hidden from non-admin users",
-        "Admin can declare open and close numbers for any active market",
-        "Admin can approve or reject pending deposit/withdrawal requests",
-        "Admin sees total platform stats: active users, total bets today, total payout today",
-        "Admin actions trigger immediate backend state updates"
+        "Each market card in MarketLobby shows the latest result (open | jodi | close) if available",
+        "If no result has been declared yet for a market, a 'Result Awaited' placeholder is shown",
+        "Results are fetched from the backend and update automatically (polling consistent with markets query)"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/AdminPanel.tsx",
+          "path": "frontend/src/hooks/useGameResultsQueries.ts",
           "operation": "create",
-          "description": "Create admin-only page with tabs for result declaration, market management, deposit/withdrawal request approval, and platform statistics. Use the authorization component to verify admin role via isCallerAdmin() before rendering admin controls. Verify the component's usage instructions before implementing."
+          "description": "Create a React Query hook to fetch all declared game results from the backend actor using the getResults method. The hook should accept an array of market IDs, poll every 30 seconds (consistent with markets query), and return results grouped by market. Cache results under the 'gameResults' query key."
         },
         {
-          "path": "frontend/src/components/ResultDeclarationForm.tsx",
-          "operation": "create",
-          "description": "Form component for declaring game results with inputs for market selection, open number, close number, Jodi, and Panna arrays. Calls declareGameResult() backend method."
+          "path": "frontend/src/components/MarketCard.tsx",
+          "operation": "modify",
+          "description": "Extend the MarketCard component to display the latest game result beneath the market name and schedule. Add props to accept the latest result (open number, close number, jodi). If a result is available, display it in a compact format (e.g., 'Open: 5 | Jodi: 58 | Close: 3'). If no result exists, show 'Result Awaited' as a placeholder. Style the result section to match the existing card design with appropriate spacing and text colors."
         },
         {
-          "path": "frontend/src/components/DepositRequestsTable.tsx",
-          "operation": "create",
-          "description": "Table displaying pending deposit requests with approve/reject actions. Fetches data via getPendingDepositRequests() and calls approveDepositRequest() or rejectDepositRequest()."
-        },
-        {
-          "path": "frontend/src/components/WithdrawalRequestsTable.tsx",
-          "operation": "create",
-          "description": "Table displaying pending withdrawal requests with approve/reject actions. Fetches data via getPendingWithdrawalRequests() and calls approveWithdrawalRequest() or rejectWithdrawalRequest()."
-        },
-        {
-          "path": "frontend/src/components/PlatformStatsCard.tsx",
-          "operation": "create",
-          "description": "Dashboard card component showing platform statistics (active users, total bets, total payout, etc.) fetched via getPlatformStats()."
-        },
-        {
-          "path": "frontend/src/components/MarketManagementTable.tsx",
-          "operation": "create",
-          "description": "Table for managing market open/close status. Fetches markets via getAllMarkets() and updates status via updateMarketStatus()."
-        },
-        {
-          "path": "frontend/src/hooks/useAdminQueries.ts",
-          "operation": "create",
-          "description": "React Query hooks for admin operations: fetching pending requests, platform stats, declaring results, and approving/rejecting requests."
+          "path": "frontend/src/pages/MarketLobby.tsx",
+          "operation": "modify",
+          "description": "Update the MarketLobby page to fetch game results using the new useGameResultsQueries hook. Pass the list of market IDs from the fetched markets to the hook. For each market card, find and pass the most recent result as a prop. Ensure the results polling interval matches the markets query (30 seconds). Handle loading and error states gracefully."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Build Market Lobby page showing all active Matka markets with name, times, last result, and status",
+      "summary": "Add a dedicated 'Results' section or page accessible from the main navigation that lists all markets with their historical game results",
       "acceptanceCriteria": [
-        "Market lobby shows all seeded markets with name, open/close time, and status",
-        "Last result is displayed in standard Matka format (e.g., 3 45 6)",
-        "Markets with closed betting show a disabled state",
-        "Clicking a market navigates to the bet placement page for that market",
-        "Unauthenticated users see a login prompt before accessing bet placement"
+        "A Results page or section is accessible from the app navigation",
+        "Results are listed per market in reverse chronological order",
+        "Each row shows date, market name, open number, close number, and jodi",
+        "Page is accessible to unauthenticated users"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/MarketLobby.tsx",
+          "path": "frontend/src/pages/Results.tsx",
           "operation": "create",
-          "description": "Main lobby page displaying all markets as cards. Use the authorization component to check authentication state before allowing navigation to bet placement. Fetches markets via getAllMarkets(). Each market card shows name, open/close time, last result, and status. Clicking navigates to /bet/:marketId. Verify the component's usage instructions before implementing."
+          "description": "Create a Results page that displays historical game results for all markets. Use the useGameResultsQueries hook to fetch results with a time range covering recent history. Render results in a table or card list grouped by market, sorted in reverse chronological order (newest first). Each entry should display the market name, date/time, open number, close number, and jodi. Include a page header with title 'Game Results'. The page should be accessible to unauthenticated users (no auth guard). Apply consistent styling with the rest of the app using Tailwind classes and the Matka theme."
         },
         {
-          "path": "frontend/src/components/MarketCard.tsx",
-          "operation": "create",
-          "description": "Card component for individual market display showing name, times, last result in Matka format, and status badge. Disabled state when betting is closed."
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Register the new Results page route in the TanStack Router configuration. Add a route at '/results' that renders the Results page component. Ensure the route is publicly accessible (no auth requirement)."
         },
         {
-          "path": "frontend/src/hooks/useMarketQueries.ts",
-          "operation": "create",
-          "description": "React Query hooks for fetching markets via getAllMarkets() and individual market details via getGameType()."
+          "path": "frontend/src/components/Layout.tsx",
+          "operation": "modify",
+          "description": "Add a 'Results' navigation link to the main header navigation. Position it alongside existing links (Markets, My Bets, Wallet, Admin Panel). The link should navigate to '/results' and be visible to all users (authenticated and unauthenticated). Style it consistently with existing navigation links."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Build Bet Placement page supporting all bet types (Single, Jodi, Single/Double/Triple Panna) with amount input, balance validation, and confirmation",
+      "summary": "Add a React Query hook to fetch all declared game results from the backend actor with polling",
       "acceptanceCriteria": [
-        "All five bet types are selectable with appropriate number input constraints",
-        "Minimum bet amount is ₹10 (1000 paise)",
-        "Current wallet balance is displayed and validated before submission",
-        "On successful bet, balance is deducted and a confirmation with expected payout is shown",
-        "Backend rejects bets if market is closed or balance is insufficient",
-        "Expected payout is calculated and shown before confirmation"
+        "Hook fetches game results from the backend actor",
+        "Data refreshes every 30 seconds automatically",
+        "Hook returns results grouped or filterable by market"
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/BetPlacement.tsx",
+          "path": "frontend/src/hooks/useGameResultsQueries.ts",
           "operation": "create",
-          "description": "Bet placement page with market context from route params. Use the authorization component to enforce user authentication before allowing bet placement. Displays current balance from getCallerUserProfile(), bet type selector, number input with validation, amount input (min ₹10), expected payout calculation, and confirmation dialog. Calls placeBet() backend method. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/BetTypeSelector.tsx",
-          "operation": "create",
-          "description": "Component for selecting bet type (Single, Jodi, Single Panna, Double Panna, Triple Panna) with appropriate UI for each type."
-        },
-        {
-          "path": "frontend/src/components/BetNumberInput.tsx",
-          "operation": "create",
-          "description": "Input component for bet numbers with validation based on selected bet type (0-9 for Single, 00-99 for Jodi, Panna combinations)."
-        },
-        {
-          "path": "frontend/src/components/BetConfirmationDialog.tsx",
-          "operation": "create",
-          "description": "Confirmation dialog showing bet details (type, number, amount) and expected payout based on standard Matka odds."
-        },
-        {
-          "path": "frontend/src/hooks/useBetQueries.ts",
-          "operation": "create",
-          "description": "React Query hooks for placing bets via placeBet() and calculating expected payouts based on bet type and amount."
-        },
-        {
-          "path": "frontend/src/utils/matkaOdds.ts",
-          "operation": "create",
-          "description": "Utility functions for calculating expected payouts based on standard Matka odds (Single 9x, Jodi 90x, Single Panna 150x, Double Panna 300x, Triple Panna 600x)."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Build Wallet page with balance display, deposit/withdrawal request forms, and transaction history",
-      "acceptanceCriteria": [
-        "Wallet page shows balance in formatted INR (e.g., ₹1,250.00)",
-        "Deposit form accepts amount and UTR reference and submits to backend as a pending request",
-        "Withdrawal form accepts amount and UPI ID and submits to backend as a pending request",
-        "Transaction history lists all wallet events with date, type, amount, and status",
-        "Deposit and withdrawal requests show pending/approved/rejected status"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/Wallet.tsx",
-          "operation": "create",
-          "description": "Wallet page displaying balance from getCallerUserProfile(), deposit/withdrawal forms, and transaction history. Use the authorization component to enforce user authentication. Calls submitDepositRequest() and submitWithdrawalRequest() backend methods. Displays transactions via getTransactionHistory(). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/DepositForm.tsx",
-          "operation": "create",
-          "description": "Form for submitting deposit requests with amount input and UTR reference field. Calls submitDepositRequest()."
-        },
-        {
-          "path": "frontend/src/components/WithdrawalForm.tsx",
-          "operation": "create",
-          "description": "Form for submitting withdrawal requests with amount input and UPI ID field. Validates sufficient balance. Calls submitWithdrawalRequest()."
-        },
-        {
-          "path": "frontend/src/components/TransactionHistoryTable.tsx",
-          "operation": "create",
-          "description": "Table displaying all wallet transactions (deposits, withdrawals, bet placements, winnings) with date, type, amount, and status. Fetched via getTransactionHistory()."
-        },
-        {
-          "path": "frontend/src/hooks/useWalletQueries.ts",
-          "operation": "create",
-          "description": "React Query hooks for wallet operations: fetching transaction history via getTransactionHistory(), submitting deposit/withdrawal requests, and invalidating balance after transactions."
-        },
-        {
-          "path": "frontend/src/utils/currency.ts",
-          "operation": "modify",
-          "description": "Update currency utilities to support INR formatting (converting paise bigint to ₹X,XXX.XX format) and parsing INR input to paise bigint for backend submission."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Build My Bets / Results page showing user's bet history with outcome and payout",
-      "acceptanceCriteria": [
-        "All bets for the authenticated user are fetched and displayed",
-        "Each bet row shows market, type, number, amount, and outcome",
-        "Won bets show the payout amount in green; lost bets in red; pending in amber",
-        "Bets are grouped by date, newest first"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/MyBets.tsx",
-          "operation": "create",
-          "description": "Page displaying authenticated user's bet history. Use the authorization component to enforce user authentication. Fetches bets via getBetHistory() and displays them grouped by date with color-coded outcomes. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/BetHistoryTable.tsx",
-          "operation": "create",
-          "description": "Table component displaying bet history rows with market name, bet type, selected number, amount, result (won/lost/pending), and payout. Color-codes outcomes: green for won, red for lost, amber for pending."
-        },
-        {
-          "path": "frontend/src/hooks/useBetHistoryQueries.ts",
-          "operation": "create",
-          "description": "React Query hooks for fetching user bet history via getBetHistory() and grouping bets by date."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Apply bold Indian Matka visual theme with dark background, red/gold accents, traditional motifs, and mobile-first layout",
-      "acceptanceCriteria": [
-        "App title, logo area, and page title reflect Matka branding",
-        "Color scheme uses dark background with red/gold accents consistently",
-        "Navigation includes: Markets, My Bets, Wallet, and Admin (admin only)",
-        "All APK-related pages, routes, and components are removed",
-        "Layout is mobile-first and usable on small screens"
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/index.html",
-          "operation": "modify",
-          "description": "Update page title to 'Matka Pro — Advanced Matka Gambling Platform' and set favicon to the generated Matka logo workspace/frontend/public/assets/generated/matka-logo.dim_256x256.png."
-        },
-        {
-          "path": "frontend/src/index.css",
-          "operation": "modify",
-          "description": "Replace existing theme with Matka-specific dark theme using deep red (#8B0000, #DC143C) and gold (#FFD700, #DAA520) OKLCH values. Update CSS custom properties for backgrounds, accents, borders, and text to match Matka branding. Add utility classes for Matka-specific styling (e.g., neon-red-glow, gold-border)."
-        },
-        {
-          "path": "frontend/tailwind.config.js",
-          "operation": "modify",
-          "description": "Update Tailwind config with Matka color palette (matkaRed, matkaGold, matkaDark) and traditional Indian fonts suitable for gambling (e.g., bold sans-serif for numbers). Configure custom shadows and gradients for Matka wheel/card motifs."
-        },
-        {
-          "path": "frontend/src/components/Layout.tsx",
-          "operation": "modify",
-          "description": "Replace APK-related branding with Matka branding. Update header to show Matka Pro logo (workspace/frontend/public/assets/generated/matka-logo.dim_256x256.png) and navigation links: Markets, My Bets, Wallet, Admin (conditional on isCallerAdmin()). Use the authorization component to conditionally show the Admin link. Remove scanline overlay and APK footer copy. Add LoginButton component for authentication. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/LoginButton.tsx",
-          "operation": "create",
-          "description": "Login/logout button component using the authorization component's useInternetIdentity hook. Displays 'Login' when unauthenticated, 'Logout' when authenticated, and handles login/logout flow with query cache clearing on logout. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/ProfileSetupModal.tsx",
-          "operation": "create",
-          "description": "Modal for first-time user profile setup, asking for username. Use the authorization component's getCallerUserProfile and saveCallerUserProfile methods. Shown only when user is authenticated but has no profile. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/AccessDeniedScreen.tsx",
-          "operation": "create",
-          "description": "Full-screen component shown when non-admin users attempt to access admin routes. Displays 'Access Denied' message with Matka branding and a link back to the market lobby."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Replace existing routes with Matka app routes: / (MarketLobby), /bet/:marketId (BetPlacement), /my-bets (MyBets), /wallet (Wallet), /admin (AdminPanel). Remove APKEditor and JobHistory routes. All routes nested under Layout. Wire ProfileSetupModal at root level to handle first-time user setup."
-        },
-        {
-          "path": "frontend/src/pages/APKEditor.tsx",
-          "operation": "delete",
-          "description": "Remove APK editor page as it is replaced by Matka functionality."
-        },
-        {
-          "path": "frontend/src/pages/JobHistory.tsx",
-          "operation": "delete",
-          "description": "Remove job history page as it is replaced by Matka functionality."
-        },
-        {
-          "path": "frontend/src/components/JobHistoryTable.tsx",
-          "operation": "delete",
-          "description": "Remove APK job history table component."
-        },
-        {
-          "path": "frontend/src/hooks/usePatchJobQueries.ts",
-          "operation": "delete",
-          "description": "Remove APK patch job queries hook."
-        },
-        {
-          "path": "frontend/src/utils/apkParser.ts",
-          "operation": "delete",
-          "description": "Remove APK parser utility."
-        },
-        {
-          "path": "frontend/src/utils/apkPatcher.ts",
-          "operation": "delete",
-          "description": "Remove APK patcher utility."
-        },
-        {
-          "path": "frontend/public/assets/generated/matka-logo.dim_256x256.png",
-          "operation": "create",
-          "description": "Wire generated Matka logo (workspace/frontend/public/assets/generated/matka-logo.dim_256x256.png) as static asset for use in header and favicon."
-        },
-        {
-          "path": "frontend/public/assets/generated/matka-hero-banner.dim_1200x400.png",
-          "operation": "create",
-          "description": "Wire generated Matka hero banner (workspace/frontend/public/assets/generated/matka-hero-banner.dim_1200x400.png) as static asset for use on the MarketLobby page hero section."
-        },
-        {
-          "path": "frontend/src/pages/MarketLobby.tsx",
-          "operation": "modify",
-          "description": "Add hero section at top of MarketLobby page displaying the generated Matka hero banner (workspace/frontend/public/assets/generated/matka-hero-banner.dim_1200x400.png) with welcome text and branding. This is added to an existing required page, not a new homepage."
+          "description": "Create a custom React Query hook useGameResultsQueries that fetches game results from the backend actor's getResults method. Accept an array of market IDs as input and an optional TimeRange parameter. Enable automatic polling with a 30-second refetch interval. The query should be enabled only when the actor is available. Return results structured by market for easy lookup. Use the query key ['gameResults', marketIds] for proper caching and invalidation. Export the hook as the default export."
         }
       ]
     }

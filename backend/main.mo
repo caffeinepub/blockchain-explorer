@@ -1,18 +1,16 @@
 import Map "mo:core/Map";
 import List "mo:core/List";
-import Principal "mo:core/Principal";
 import Text "mo:core/Text";
 import Nat "mo:core/Nat";
 import Iter "mo:core/Iter";
+import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
 import Array "mo:core/Array";
 import AccessControl "authorization/access-control";
 import MixinStorage "blob-storage/Mixin";
 import MixinAuthorization "authorization/MixinAuthorization";
-import Migration "migration";
 
-(with migration = Migration.run)
 actor {
   include MixinStorage();
 
@@ -131,6 +129,25 @@ actor {
     createdAt : Int;
   };
 
+  public type Result = {
+    marketId : Text;
+    openNumber : Text;
+    closeNumber : Text;
+    jodi : Text;
+
+    time : Int;
+  };
+
+  public type MarketResults = {
+    marktetId : Text;
+    results : [Result];
+  };
+
+  public type TimeRange = {
+    timeStart : Int;
+    timeEnd : Int;
+  };
+
   let depositRequests = Map.empty<DepositRequestId, DepositRequest>();
   let withdrawalRequests = Map.empty<WithdrawalRequestId, WithdrawalRequest>();
   let bets = Map.empty<BetId, Bet>();
@@ -138,6 +155,7 @@ actor {
   let markets = Map.empty<MarketId, Market>();
   let gameTypes = Map.empty<GameTypeId, GameType>();
   let userTransactions = Map.empty<Principal, List.List<Transaction>>();
+  let resultsStore = Map.empty<Text, List.List<Result>>();
   var nextDepositRequestId = 1;
   var nextWithdrawalRequestId = 1;
   var nextBetId = 1;
@@ -368,5 +386,57 @@ actor {
       totalDeposits = 0;
       totalWithdrawals = 0;
     };
+  };
+
+  // Add a declared game result for a market. Admin only.
+  public shared ({ caller }) func addResult(
+    market : Text,
+    openNumber : Text,
+    closeNumber : Text,
+    jodi : Text,
+  ) : async () {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Only admins can add results");
+    };
+
+    let result : Result = {
+      marketId = market;
+      openNumber;
+      closeNumber;
+      jodi;
+      time = Time.now();
+    };
+
+    let currentResults = switch (resultsStore.get(market)) {
+      case (null) { List.empty<Result>() };
+      case (?results) { results };
+    };
+
+    currentResults.add(result);
+    resultsStore.add(market, currentResults);
+  };
+
+  // Get declared game results for specified markets. Public read - results are public information.
+  public query func getResults(
+    markets : [Text],
+    _range : ?TimeRange,
+  ) : async [MarketResults] {
+    // Declared game results are public information; no authorization check required.
+    let marketResultsList = List.empty<MarketResults>();
+
+    for (market in markets.values()) {
+      switch (resultsStore.get(market)) {
+        case (null) {};
+        case (?results) {
+          let marketResult : MarketResults = {
+            marktetId = market;
+            results = results.toArray();
+          };
+          marketResultsList.add(marketResult);
+        };
+      };
+    };
+
+    marketResultsList.toArray();
   };
 };

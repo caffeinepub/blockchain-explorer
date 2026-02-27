@@ -15,6 +15,7 @@ import BetPlacement from './pages/BetPlacement';
 import MyBets from './pages/MyBets';
 import Wallet from './pages/Wallet';
 import AdminPanel from './pages/AdminPanel';
+import Results from './pages/Results';
 import ProfileSetupModal from './components/ProfileSetupModal';
 import { useGetCallerUserProfile } from './hooks/useQueries';
 import { useInternetIdentity } from './hooks/useInternetIdentity';
@@ -53,12 +54,19 @@ const adminRoute = createRoute({
   component: AdminPanel,
 });
 
+const resultsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/results',
+  component: Results,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   betRoute,
   myBetsRoute,
   walletRoute,
   adminRoute,
+  resultsRoute,
 ]);
 
 const router = createRouter({ routeTree });

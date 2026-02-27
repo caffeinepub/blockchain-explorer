@@ -1,122 +1,20 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-26T18:14:22.781Z",
-  "summary": "The diff implements a comprehensive Matka gambling platform replacing APK-related code. Most requirements are addressed: backend data structures, frontend pages (MarketLobby, BetPlacement, MyBets, Wallet, AdminPanel), Matka theme, Internet Identity auth, and admin panel. However, several specific acceptance criteria have gaps — notably the last result display in Matka format on market cards, grouping of bets by date, transaction history showing deposit/withdrawal statuses, and the backend registerUser function appears to be stubbed out. The diff is truncated, so some pages are referenced but their full implementations are not visible.",
-  "missing_requirements": [
-    {
-      "id": "REQ-3",
-      "requirement": "Last result is displayed in standard Matka format (e.g., 3 45 6) on market cards",
-      "reason": "The MarketCard component does not show any last result field. The Market type in backend/main.mo also does not include a lastResult field. No evidence of last result display on market cards.",
-      "evidence": [
-        "frontend/src/components/MarketCard.tsx",
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "requirement": "Bets are grouped by date, newest first",
-      "reason": "BetHistoryTable.tsx renders bets in a flat table with no date grouping logic visible.",
-      "evidence": [
-        "frontend/src/components/BetHistoryTable.tsx"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "requirement": "Transaction history shows deposit and withdrawal requests with pending/approved/rejected status",
-      "reason": "TransactionHistoryTable.tsx does not render a status column. The table only shows type, amount, and date with no status field for deposit/withdrawal requests.",
-      "evidence": [
-        "frontend/src/components/TransactionHistoryTable.tsx"
-      ]
-    },
-    {
-      "id": "REQ-1",
-      "requirement": "User can register and their balance is stored as Nat (paise units) in stable memory",
-      "reason": "The registerUser function in backend/main.mo is stubbed with Runtime.trap('User registration is currently not supported.'), meaning user registration does not actually function.",
-      "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "requirement": "Admin sees total platform stats: active users, total bets today, total payout today",
-      "reason": "PlatformStatsCard shows all-time totals with no 'today' filtering. No date-scoped stat logic is visible in useGetPlatformStats or the backend.",
-      "evidence": [
-        "frontend/src/components/PlatformStatsCard.tsx",
-        "frontend/src/hooks/useAdminQueries.ts"
-      ]
-    }
-  ],
-  "hallucinated_features": [
-    {
-      "description": "Legacy USD currency helper functions (formatCentsToUSD, dollarsToCents) kept in currency.ts",
-      "reason": "The build request specifies all monetary values in paise/INR only. These USD-named legacy helpers were not requested.",
-      "evidence": [
-        "frontend/src/utils/currency.ts"
-      ]
-    },
-    {
-      "description": "Separate GameType entity with its own open/closed status independent from Market status",
-      "reason": "The build request describes markets with bet types directly. A separate GameType layer with independent status management was not requested.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/hooks/useBetQueries.ts"
-      ]
-    },
-    {
-      "description": "Per-user totalDeposits and totalWithdrawals aggregate fields in UserProfile",
-      "reason": "These per-user aggregate tracking fields were not specified in the requirements for the UserProfile type.",
-      "evidence": [
-        "backend/main.mo",
-        "frontend/src/components/ProfileSetupModal.tsx"
-      ]
-    }
-  ],
-  "confidence": 0.62,
+  "generatedAt": "2026-02-27T16:46:41.784Z",
+  "summary": "The diff implements all four requirements. REQ-1 is addressed in backend/main.mo with a resultsStore, Result/MarketResults types, and a getResults query. REQ-2 is addressed in MarketCard.tsx and MarketLobby.tsx showing latest results or 'Result Awaited'. REQ-3 is addressed with the new Results.tsx page and the /results route in App.tsx plus the navigation link in Layout.tsx. REQ-4 is addressed with the new useGameResultsQueries.ts hook polling every 30 seconds. All acceptance criteria appear satisfied based on the diff evidence.",
+  "missing_requirements": [],
+  "hallucinated_features": [],
+  "confidence": 0.88,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/index.html",
     "frontend/src/App.tsx",
-    "frontend/src/components/AccessDeniedScreen.tsx",
-    "frontend/src/components/BetConfirmationDialog.tsx",
-    "frontend/src/components/BetHistoryTable.tsx",
-    "frontend/src/components/BetNumberInput.tsx",
-    "frontend/src/components/BetTypeSelector.tsx",
-    "frontend/src/components/DepositForm.tsx",
-    "frontend/src/components/DepositRequestsTable.tsx",
-    "frontend/src/components/JobHistoryTable.tsx",
     "frontend/src/components/Layout.tsx",
-    "frontend/src/components/LoginButton.tsx",
     "frontend/src/components/MarketCard.tsx",
-    "frontend/src/components/MarketManagementTable.tsx",
-    "frontend/src/components/PlatformStatsCard.tsx",
-    "frontend/src/components/ProfileSetupModal.tsx",
-    "frontend/src/components/ResultDeclarationForm.tsx",
-    "frontend/src/components/TransactionHistoryTable.tsx",
-    "frontend/src/components/WithdrawalForm.tsx",
-    "frontend/src/components/WithdrawalRequestsTable.tsx",
-    "frontend/src/hooks/useAdminQueries.ts",
-    "frontend/src/hooks/useBetHistoryQueries.ts",
-    "frontend/src/hooks/useBetQueries.ts",
-    "frontend/src/hooks/useMarketQueries.ts",
-    "frontend/src/hooks/usePatchJobQueries.ts",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/hooks/useWalletQueries.ts",
-    "frontend/src/index.css",
-    "frontend/src/pages/APKEditor.tsx",
-    "frontend/src/pages/AdminPanel.tsx",
-    "frontend/src/pages/BetPlacement.tsx",
-    "frontend/src/pages/JobHistory.tsx",
+    "frontend/src/hooks/useGameResultsQueries.ts",
     "frontend/src/pages/MarketLobby.tsx",
-    "frontend/src/pages/MyBets.tsx",
-    "frontend/src/pages/Wallet.tsx",
-    "frontend/src/utils/apkParser.ts",
-    "frontend/src/utils/apkPatcher.ts",
-    "frontend/src/utils/currency.ts",
-    "frontend/src/utils/matkaOdds.ts",
-    "frontend/tailwind.config.js",
+    "frontend/src/pages/Results.tsx",
     "project_state.json"
   ]
 }

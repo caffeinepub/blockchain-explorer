@@ -10,11 +10,12 @@ import BetConfirmationDialog from '../components/BetConfirmationDialog';
 import { BetType, Variant_closed_open } from '../backend';
 import { validateBetNumber, calculatePayout } from '../utils/matkaOdds';
 import { formatPaiseToINR, rupeesToPaise } from '../utils/currency';
+import { mergeMarkets } from '../lib/staticMarkets';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Wallet, AlertCircle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Wallet, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function BetPlacement() {
@@ -22,7 +23,7 @@ export default function BetPlacement() {
   const navigate = useNavigate();
   const { identity } = useInternetIdentity();
 
-  const { data: markets, isLoading: marketsLoading } = useGetAllMarkets();
+  const { data: backendMarkets, isLoading: marketsLoading } = useGetAllMarkets();
   const { data: gameTypes, isLoading: gameTypesLoading } = useGetAllGameTypes();
   const { data: userProfile, isLoading: profileLoading } = useGetCallerUserProfile();
   const placeBetMutation = usePlaceBet();
@@ -34,7 +35,9 @@ export default function BetPlacement() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [betSuccess, setBetSuccess] = useState(false);
 
-  const market = markets?.find((m) => m.id.toString() === marketId);
+  // Merge backend markets with static fallback
+  const markets = mergeMarkets(backendMarkets ?? []);
+  const market = markets.find((m) => m.id.toString() === marketId);
   const gameType = gameTypes?.find((gt) => gt.marketId.toString() === marketId);
 
   const isLoading = marketsLoading || gameTypesLoading || profileLoading;
@@ -111,7 +114,7 @@ export default function BetPlacement() {
 
   const handleConfirmBet = async () => {
     if (!gameType) {
-      toast.error('Game type not found for this market');
+      toast.error('Game type not available for this market. Please contact admin.');
       return;
     }
     try {
@@ -158,7 +161,17 @@ export default function BetPlacement() {
             {isMarketOpen ? '● OPEN' : '● CLOSED'}
           </span>
         </div>
-        <p className="text-sm text-muted-foreground">Place your bet on this market</p>
+        {/* Schedule info */}
+        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
+          <span className="flex items-center gap-1">
+            <Clock className="w-3 h-3 text-green-400" />
+            Open: {new Date(Number(market.openTime) / 1_000_000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </span>
+          <span className="flex items-center gap-1">
+            <Clock className="w-3 h-3 text-matkaRed-bright" />
+            Close: {new Date(Number(market.closeTime) / 1_000_000).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
+          </span>
+        </div>
       </div>
 
       {!isMarketOpen ? (

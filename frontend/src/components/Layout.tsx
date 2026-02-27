@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useRouterState } from '@tanstack/react-router';
-import { TrendingUp, Wallet, ListChecks, ShieldCheck } from 'lucide-react';
+import { TrendingUp, Wallet, ListChecks, ShieldCheck, Trophy } from 'lucide-react';
 import LoginButton from './LoginButton';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useIsCallerAdmin } from '../hooks/useAdminQueries';
@@ -21,6 +21,7 @@ export function Layout() {
 
   const navLinks = [
     { to: '/', label: 'Markets', icon: TrendingUp },
+    { to: '/results', label: 'Results', icon: Trophy },
     { to: '/my-bets', label: 'My Bets', icon: ListChecks, authRequired: true },
     { to: '/wallet', label: 'Wallet', icon: Wallet, authRequired: true },
   ];

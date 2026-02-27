@@ -31,6 +31,10 @@ export interface Bet {
     payout?: bigint;
 }
 export type MarketId = bigint;
+export interface MarketResults {
+    results: Array<Result>;
+    marktetId: string;
+}
 export type GameTypeId = bigint;
 export interface Market {
     id: MarketId;
@@ -60,6 +64,17 @@ export interface Transaction {
     amount: bigint;
 }
 export type TransactionId = bigint;
+export interface Result {
+    jodi: string;
+    time: bigint;
+    closeNumber: string;
+    marketId: string;
+    openNumber: string;
+}
+export interface TimeRange {
+    timeStart: bigint;
+    timeEnd: bigint;
+}
 export interface DepositRequest {
     id: DepositRequestId;
     utr: string;
@@ -114,6 +129,7 @@ export enum Variant_won_pending_lost {
     lost = "lost"
 }
 export interface backendInterface {
+    addResult(market: string, openNumber: string, closeNumber: string, jodi: string): Promise<void>;
     approveDepositRequest(_requestId: DepositRequestId): Promise<boolean>;
     approveWithdrawalRequest(_requestId: WithdrawalRequestId): Promise<boolean>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -135,6 +151,7 @@ export interface backendInterface {
         totalPayout: bigint;
         totalDeposits: bigint;
     }>;
+    getResults(markets: Array<string>, _range: TimeRange | null): Promise<Array<MarketResults>>;
     getTransactionHistory(user: Principal): Promise<Array<Transaction>>;
     getUserBets(user: Principal): Promise<Array<Bet>>;
     getUserProfile(arg0: Principal): Promise<UserProfile | null>;

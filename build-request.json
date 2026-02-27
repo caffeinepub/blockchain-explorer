@@ -1,171 +1,93 @@
 {
   "kind": "build_request",
-  "title": "Advanced Matka Gambling App with Real Money Betting",
+  "title": "Display game results for all markets",
   "projectName": "Matka Pro",
-  "priority": "high",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Rebuild the backend as a Matka gambling platform actor. Replace all existing APK-related logic with: user registration and profile management (username, balance in paise as Nat), deposit and withdrawal request tracking, Matka game result management (open/close numbers, Jodi, Panna), bet placement with market types (Single, Jodi, Single Panna, Double Panna, Triple Panna), and result declaration with automatic payout calculation based on standard Matka odds.",
+      "text": "Add a backend function to store and retrieve declared game results per market, including open number, close number, and jodi values with a timestamp.",
       "target": "backend",
       "source": {
         "messageIds": [
-          "msg-11"
+          "msg-12"
         ],
         "quotes": [
-          "Create advance matka app working with real money"
+          "Aur abhi games ke result bhi dikhao"
         ]
       },
       "acceptanceCriteria": [
-        "User can register and their balance is stored as Nat (paise units) in stable memory",
-        "User can place bets on open/close digits, Jodi (00–99), and Panna combinations",
-        "Backend validates sufficient balance before accepting any bet",
-        "Admin can declare results (open number, close number) for a market",
-        "Winning bets are automatically calculated and balances credited using standard Matka odds (Single 9x, Jodi 90x, Single Panna 150x, Double Panna 300x, Triple Panna 600x)",
-        "Deposit and withdrawal requests are stored with status (pending/approved/rejected) and can be managed by admin",
-        "All state is stored in stable variables to survive canister upgrades"
+        "Backend exposes a query to fetch recent game results for all markets",
+        "Each result record includes market ID, open number, close number, jodi, and declaration timestamp",
+        "Results are stored persistently in actor state"
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Create an Admin panel page accessible only to the canister controller/admin principal. Admin can: declare game results for active markets, manage market open/close schedules, view all pending deposit and withdrawal requests, approve or reject deposit/withdrawal requests, and view overall platform statistics (total bets, total payout, active users).",
-      "target": "both",
+      "text": "Display the latest declared game results for each market on the Market Lobby page. Each market card should show the most recent open number, close number, and jodi result beneath the market name and schedule.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-11"
+          "msg-12"
         ],
         "quotes": [
-          "Create advance matka app working with real money"
+          "Aur abhi games ke result bhi dikhao"
         ]
       },
       "acceptanceCriteria": [
-        "Admin panel is hidden from non-admin users",
-        "Admin can declare open and close numbers for any active market",
-        "Admin can approve or reject pending deposit/withdrawal requests",
-        "Admin sees total platform stats: active users, total bets today, total payout today",
-        "Admin actions trigger immediate backend state updates"
+        "Each market card in MarketLobby shows the latest result (open | jodi | close) if available",
+        "If no result has been declared yet for a market, a 'Result Awaited' placeholder is shown",
+        "Results are fetched from the backend and update automatically (polling consistent with markets query)"
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Build a Market Lobby page showing all active Matka markets (e.g., Kalyan, Milan Day, Rajdhani Night). Each market card must display: market name, open time, close time, last result (open digit + Jodi + close digit), and current market status (betting open / waiting for result / result declared). Users must be logged in via Internet Identity to place bets.",
+      "text": "Add a dedicated 'Results' section or page accessible from the main navigation that lists all markets with their historical game results in reverse chronological order (date, market name, open number, close number, jodi).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-11"
+          "msg-12"
         ],
         "quotes": [
-          "Create advance matka app working with real money"
+          "Aur abhi games ke result bhi dikhao"
         ]
       },
       "acceptanceCriteria": [
-        "Market lobby shows all seeded markets with name, open/close time, and status",
-        "Last result is displayed in standard Matka format (e.g., 3 45 6)",
-        "Markets with closed betting show a disabled state",
-        "Clicking a market navigates to the bet placement page for that market",
-        "Unauthenticated users see a login prompt before accessing bet placement"
+        "A Results page or section is accessible from the app navigation",
+        "Results are listed per market in reverse chronological order",
+        "Each row shows date, market name, open number, close number, and jodi",
+        "Page is accessible to unauthenticated users"
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Build a Bet Placement page for each market. The page must support all bet types: Single (open/close digit 0–9), Jodi (00–99), Single Panna, Double Panna, and Triple Panna. User selects bet type, enters their number selection, enters bet amount (minimum ₹10), and submits. Show current wallet balance and deduct it immediately on successful bet. Display a confirmation with expected payout.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-11"
-        ],
-        "quotes": [
-          "Create advance matka app working with real money"
-        ]
-      },
-      "acceptanceCriteria": [
-        "All five bet types are selectable with appropriate number input constraints",
-        "Minimum bet amount is ₹10 (1000 paise)",
-        "Current wallet balance is displayed and validated before submission",
-        "On successful bet, balance is deducted and a confirmation with expected payout is shown",
-        "Backend rejects bets if market is closed or balance is insufficient",
-        "Expected payout is calculated and shown before confirmation"
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "text": "Build a Wallet page where users can: view current balance in INR, submit a deposit request (amount + UTR/transaction reference number), submit a withdrawal request (amount + UPI ID or bank details), and view the full transaction history including bet placements, winnings, deposits, and withdrawals with statuses.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-11"
-        ],
-        "quotes": [
-          "Create advance matka app working with real money"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Wallet page shows balance in formatted INR (e.g., ₹1,250.00)",
-        "Deposit form accepts amount and UTR reference and submits to backend as a pending request",
-        "Withdrawal form accepts amount and UPI ID and submits to backend as a pending request",
-        "Transaction history lists all wallet events with date, type, amount, and status",
-        "Deposit and withdrawal requests show pending/approved/rejected status"
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "text": "Build a My Bets / Results page showing the authenticated user's full bet history. Each row shows: market name, bet type, selected number, bet amount, result (win/loss/pending), and payout amount. Group bets by date with the most recent first.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-11"
-        ],
-        "quotes": [
-          "Create advance matka app working with real money"
-        ]
-      },
-      "acceptanceCriteria": [
-        "All bets for the authenticated user are fetched and displayed",
-        "Each bet row shows market, type, number, amount, and outcome",
-        "Won bets show the payout amount in green; lost bets in red; pending in amber",
-        "Bets are grouped by date, newest first"
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "text": "Apply a bold Indian gambling/Matka visual theme across the entire app. Use a dark background with deep red and gold as primary accent colors, traditional Matka wheel/playing card motifs, bold typography for numbers and results, and a responsive mobile-first layout. Replace all APK-related branding, copy, and navigation with Matka-specific equivalents.",
+      "text": "Add a React Query hook (e.g. useGameResultsQueries) to fetch all declared game results from the backend actor, with a 30-second polling interval consistent with the markets query.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-11"
-        ],
-        "quotes": [
-          "Create advance matka app working with real money"
+          "msg-12"
         ]
       },
       "acceptanceCriteria": [
-        "App title, logo area, and page title reflect Matka branding",
-        "Color scheme uses dark background with red/gold accents consistently",
-        "Navigation includes: Markets, My Bets, Wallet, and Admin (admin only)",
-        "All APK-related pages, routes, and components are removed",
-        "Layout is mobile-first and usable on small screens"
+        "Hook fetches game results from the backend actor",
+        "Data refreshes every 30 seconds automatically",
+        "Hook returns results grouped or filterable by market"
       ]
     }
   ],
   "constraints": [
-    "All monetary values must be stored as Nat in paise (1 INR = 100 paise) to avoid floating point errors",
-    "Admin-only functions in the backend must check the caller principal against a hardcoded or stored admin principal",
-    "Do not integrate any external payment gateway or third-party API — deposit/withdrawal is manual (admin approves based on UTR/UPI proof)",
-    "Internet Identity is the only authentication mechanism",
-    "All existing APK-related backend and frontend code must be replaced entirely"
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "Keep all Motoko logic in backend/main.mo single actor",
+    "Minimum deposit must remain 20 Rs as previously set",
+    "Game times must remain 10 hours shifted back as previously set"
   ],
   "nonGoals": [
-    "Automated payment gateway integration (Razorpay, PayTM, etc.)",
-    "Real-time WebSocket result updates",
-    "SMS OTP or phone number authentication",
-    "Mobile app (APK) build or distribution",
-    "Live odds feed from external Matka sources"
+    "Re-implementing the result declaration admin form (already exists in ResultDeclarationForm component)",
+    "Changing bet placement or payout logic",
+    "Adding real-time WebSocket updates"
   ],
   "imageRequirements": {
-    "required": [
-      "Dark Matka gambling app logo with a spinning wheel and gold lettering on a deep red background (matka-logo.dim_256x256.png)",
-      "Decorative Matka wheel banner with gold and red tones on dark background for hero section (matka-hero-banner.dim_1200x400.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }

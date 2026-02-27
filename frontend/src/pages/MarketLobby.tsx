@@ -3,17 +3,29 @@ import { useNavigate } from '@tanstack/react-router';
 import { useInternetIdentity } from '../hooks/useInternetIdentity';
 import { useGetAllMarkets } from '../hooks/useMarketQueries';
 import { useGetCallerUserProfile } from '../hooks/useQueries';
+import { useGetGameResults, getLatestResultForMarket } from '../hooks/useGameResultsQueries';
 import MarketCard from '../components/MarketCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { LogIn, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { mergeMarkets, STATIC_MARKETS } from '../lib/staticMarkets';
 
 export default function MarketLobby() {
   const navigate = useNavigate();
   const { identity, login, isLoggingIn } = useInternetIdentity();
   const isAuthenticated = !!identity;
-  const { data: markets, isLoading, error, refetch } = useGetAllMarkets();
+  const { data: backendMarkets, isLoading, error, refetch } = useGetAllMarkets();
   const { data: userProfile } = useGetCallerUserProfile();
+
+  // Always show all four standard Matka games; merge with backend data if available
+  const markets = mergeMarkets(backendMarkets ?? []);
+
+  // Collect all market names to fetch results for
+  const allMarketNames = markets.map((m) => m.name);
+  const staticMarketNames = STATIC_MARKETS.map((m) => m.name);
+  const marketNamesToFetch = allMarketNames.length > 0 ? allMarketNames : staticMarketNames;
+
+  const { data: gameResults } = useGetGameResults(marketNamesToFetch);
 
   const handleMarketClick = (marketId: bigint) => {
     if (!isAuthenticated) return;
@@ -101,39 +113,65 @@ export default function MarketLobby() {
         <div className="divider-gold mb-5" />
 
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Skeleton key={i} className="h-32 rounded-xl bg-matkaDark-raised" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-48 rounded-xl bg-matkaDark-raised" />
             ))}
           </div>
         ) : error ? (
-          <div className="text-center py-12">
-            <p className="text-matkaRed-bright font-semibold mb-2">Failed to load markets</p>
-            <Button onClick={() => refetch()} variant="outline" size="sm">
-              Try Again
-            </Button>
-          </div>
-        ) : !markets || markets.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <p className="text-5xl mb-4">🎲</p>
-            <p className="font-matka text-xl tracking-wide text-foreground mb-2">NO MARKETS YET</p>
-            <p className="text-sm">Markets will appear here once the admin creates them.</p>
+          /* Even on error, show static markets */
+          <div className="space-y-4">
+            <div className="p-3 rounded-lg bg-matkaRed/10 border border-matkaRed/30 text-xs text-matkaRed-bright flex items-center gap-2">
+              <span>⚠️</span>
+              <span>Could not fetch live market status. Showing default schedules.</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+              {markets.map((market) => (
+                <MarketCard
+                  key={market.id.toString()}
+                  market={market}
+                  onClick={() => handleMarketClick(market.id)}
+                  disabled={!isAuthenticated}
+                  latestResult={gameResults ? getLatestResultForMarket(gameResults, market.name) : null}
+                />
+              ))}
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4">
             {markets.map((market) => (
               <MarketCard
                 key={market.id.toString()}
                 market={market}
                 onClick={() => handleMarketClick(market.id)}
                 disabled={!isAuthenticated}
+                latestResult={gameResults ? getLatestResultForMarket(gameResults, market.name) : null}
               />
             ))}
           </div>
         )}
 
+        {/* Game info strip */}
+        <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { name: 'Time Bazar', time: '1:00 PM – 2:00 PM', emoji: '⏰' },
+            { name: 'Milan Day', time: '3:00 PM – 5:00 PM', emoji: '🌙' },
+            { name: 'Kalyan', time: '3:45 PM – 5:45 PM', emoji: '🏆' },
+            { name: 'Sridevi', time: '11:30 AM – 12:30 PM', emoji: '🌸' },
+          ].map((game) => (
+            <div
+              key={game.name}
+              className="p-3 rounded-lg bg-matkaDark-surface border border-border text-center"
+            >
+              <p className="text-xl mb-1">{game.emoji}</p>
+              <p className="font-matka text-sm tracking-wide text-foreground">{game.name}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{game.time}</p>
+            </div>
+          ))}
+        </div>
+
         {/* Odds reference */}
-        <div className="mt-10 p-4 rounded-xl bg-matkaDark-surface border border-border">
+        <div className="mt-6 p-4 rounded-xl bg-matkaDark-surface border border-border">
           <h3 className="font-matka text-lg tracking-wide text-matkaGold mb-3">PAYOUT RATES</h3>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {[

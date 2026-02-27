@@ -103,6 +103,21 @@ export const WithdrawalRequest = IDL.Record({
   'reviewer' : IDL.Opt(IDL.Principal),
   'amount' : IDL.Nat,
 });
+export const TimeRange = IDL.Record({
+  'timeStart' : IDL.Int,
+  'timeEnd' : IDL.Int,
+});
+export const Result = IDL.Record({
+  'jodi' : IDL.Text,
+  'time' : IDL.Int,
+  'closeNumber' : IDL.Text,
+  'marketId' : IDL.Text,
+  'openNumber' : IDL.Text,
+});
+export const MarketResults = IDL.Record({
+  'results' : IDL.Vec(Result),
+  'marktetId' : IDL.Text,
+});
 export const TransactionId = IDL.Nat;
 export const Transaction = IDL.Record({
   'id' : TransactionId,
@@ -145,6 +160,7 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addResult' : IDL.Func([IDL.Text, IDL.Text, IDL.Text, IDL.Text], [], []),
   'approveDepositRequest' : IDL.Func([DepositRequestId], [IDL.Bool], []),
   'approveWithdrawalRequest' : IDL.Func([WithdrawalRequestId], [IDL.Bool], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -194,6 +210,11 @@ export const idlService = IDL.Service({
           'totalDeposits' : IDL.Nat,
         }),
       ],
+      ['query'],
+    ),
+  'getResults' : IDL.Func(
+      [IDL.Vec(IDL.Text), IDL.Opt(TimeRange)],
+      [IDL.Vec(MarketResults)],
       ['query'],
     ),
   'getTransactionHistory' : IDL.Func(
@@ -333,6 +354,18 @@ export const idlFactory = ({ IDL }) => {
     'reviewer' : IDL.Opt(IDL.Principal),
     'amount' : IDL.Nat,
   });
+  const TimeRange = IDL.Record({ 'timeStart' : IDL.Int, 'timeEnd' : IDL.Int });
+  const Result = IDL.Record({
+    'jodi' : IDL.Text,
+    'time' : IDL.Int,
+    'closeNumber' : IDL.Text,
+    'marketId' : IDL.Text,
+    'openNumber' : IDL.Text,
+  });
+  const MarketResults = IDL.Record({
+    'results' : IDL.Vec(Result),
+    'marktetId' : IDL.Text,
+  });
   const TransactionId = IDL.Nat;
   const Transaction = IDL.Record({
     'id' : TransactionId,
@@ -375,6 +408,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addResult' : IDL.Func([IDL.Text, IDL.Text, IDL.Text, IDL.Text], [], []),
     'approveDepositRequest' : IDL.Func([DepositRequestId], [IDL.Bool], []),
     'approveWithdrawalRequest' : IDL.Func(
         [WithdrawalRequestId],
@@ -428,6 +462,11 @@ export const idlFactory = ({ IDL }) => {
             'totalDeposits' : IDL.Nat,
           }),
         ],
+        ['query'],
+      ),
+    'getResults' : IDL.Func(
+        [IDL.Vec(IDL.Text), IDL.Opt(TimeRange)],
+        [IDL.Vec(MarketResults)],
         ['query'],
       ),
     'getTransactionHistory' : IDL.Func(

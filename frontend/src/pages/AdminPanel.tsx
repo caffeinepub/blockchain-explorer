@@ -28,8 +28,20 @@ import {
   PlusCircle,
   Loader2,
   LogIn,
+  Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { mergeMarkets } from '../lib/staticMarkets';
+
+// Preset Matka game schedules for quick-fill
+const MATKA_PRESETS = [
+  { name: 'Time Bazar', openHour: '13', openMin: '00', closeHour: '14', closeMin: '00' },
+  { name: 'Milan Day', openHour: '15', openMin: '00', closeHour: '17', closeMin: '00' },
+  { name: 'Kalyan', openHour: '15', openMin: '45', closeHour: '17', closeMin: '45' },
+  { name: 'Sridevi', openHour: '11', openMin: '30', closeHour: '12', closeMin: '30' },
+  { name: 'Milan Night', openHour: '21', openMin: '00', closeHour: '23', closeMin: '00' },
+  { name: 'Main Bazar', openHour: '21', openMin: '00', closeHour: '23', closeMin: '30' },
+];
 
 function CreateMarketForm({ onSuccess }: { onSuccess: () => void }) {
   const [name, setName] = React.useState('');
@@ -38,6 +50,14 @@ function CreateMarketForm({ onSuccess }: { onSuccess: () => void }) {
   const [closeHour, setCloseHour] = React.useState('12');
   const [closeMin, setCloseMin] = React.useState('00');
   const createMarketMutation = useCreateMarket();
+
+  const applyPreset = (preset: typeof MATKA_PRESETS[0]) => {
+    setName(preset.name);
+    setOpenHour(preset.openHour);
+    setOpenMin(preset.openMin);
+    setCloseHour(preset.closeHour);
+    setCloseMin(preset.closeMin);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,12 +86,32 @@ function CreateMarketForm({ onSuccess }: { onSuccess: () => void }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Quick presets */}
+      <div className="space-y-2">
+        <Label className="text-foreground font-semibold text-xs flex items-center gap-1.5">
+          <Zap className="w-3.5 h-3.5 text-matkaGold" />
+          Quick Fill — Standard Matka Games
+        </Label>
+        <div className="flex flex-wrap gap-2">
+          {MATKA_PRESETS.map((preset) => (
+            <button
+              key={preset.name}
+              type="button"
+              onClick={() => applyPreset(preset)}
+              className="px-3 py-1.5 text-xs rounded-md bg-matkaDark-raised border border-matkaGold/30 text-matkaGold hover:bg-matkaGold/10 hover:border-matkaGold/60 transition-colors font-semibold"
+            >
+              {preset.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="space-y-1.5">
         <Label className="text-foreground font-semibold">Market Name</Label>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Mumbai Main"
+          placeholder="e.g. Kalyan, Milan Day, Time Bazar..."
           className="bg-matkaDark border-border focus:border-matkaGold/60"
         />
       </div>
@@ -154,7 +194,10 @@ export default function AdminPanel() {
   const { data: pendingDeposits, isLoading: depositsLoading } = useGetPendingDepositRequests();
   const { data: pendingWithdrawals, isLoading: withdrawalsLoading } = useGetPendingWithdrawalRequests();
   const { data: platformStats, isLoading: statsLoading } = useGetPlatformStats();
-  const { data: markets, isLoading: marketsLoading } = useGetAllMarkets();
+  const { data: backendMarkets, isLoading: marketsLoading, refetch: refetchMarkets } = useGetAllMarkets();
+
+  // Merge backend markets with static fallback for display
+  const markets = mergeMarkets(backendMarkets ?? []);
 
   if (!isAuthenticated) {
     return (
@@ -218,8 +261,22 @@ export default function AdminPanel() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="deposits" className="w-full">
+      <Tabs defaultValue="markets" className="w-full">
         <TabsList className="w-full bg-matkaDark-surface border border-border mb-6 flex-wrap h-auto gap-1 p-1">
+          <TabsTrigger
+            value="markets"
+            className="flex-1 min-w-[120px] data-[state=active]:bg-matkaGold/20 data-[state=active]:text-matkaGold text-xs sm:text-sm"
+          >
+            <Store className="w-3.5 h-3.5 mr-1" />
+            Markets
+          </TabsTrigger>
+          <TabsTrigger
+            value="results"
+            className="flex-1 min-w-[120px] data-[state=active]:bg-matkaGold/20 data-[state=active]:text-matkaGold text-xs sm:text-sm"
+          >
+            <Trophy className="w-3.5 h-3.5 mr-1" />
+            Results
+          </TabsTrigger>
           <TabsTrigger
             value="deposits"
             className="flex-1 min-w-[120px] data-[state=active]:bg-matkaGold/20 data-[state=active]:text-matkaGold text-xs sm:text-sm"
@@ -227,7 +284,7 @@ export default function AdminPanel() {
             <ArrowDownCircle className="w-3.5 h-3.5 mr-1" />
             Deposits
             {pendingDeposits && pendingDeposits.length > 0 && (
-              <span className="ml-1.5 bg-matkaRed text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="ml-1.5 bg-matkaRed text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
                 {pendingDeposits.length}
               </span>
             )}
@@ -239,118 +296,81 @@ export default function AdminPanel() {
             <ArrowUpCircle className="w-3.5 h-3.5 mr-1" />
             Withdrawals
             {pendingWithdrawals && pendingWithdrawals.length > 0 && (
-              <span className="ml-1.5 bg-matkaRed text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              <span className="ml-1.5 bg-matkaRed text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
                 {pendingWithdrawals.length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger
-            value="results"
-            className="flex-1 min-w-[120px] data-[state=active]:bg-matkaGold/20 data-[state=active]:text-matkaGold text-xs sm:text-sm"
-          >
-            <Trophy className="w-3.5 h-3.5 mr-1" />
-            Results
-          </TabsTrigger>
-          <TabsTrigger
-            value="markets"
-            className="flex-1 min-w-[120px] data-[state=active]:bg-matkaGold/20 data-[state=active]:text-matkaGold text-xs sm:text-sm"
-          >
-            <Store className="w-3.5 h-3.5 mr-1" />
-            Markets
-          </TabsTrigger>
         </TabsList>
 
-        {/* Pending Deposits */}
-        <TabsContent value="deposits">
-          <div className="rounded-xl bg-matkaDark-surface border border-border overflow-hidden">
-            <div className="p-4 border-b border-border">
-              <h3 className="font-semibold text-foreground">Pending Deposit Requests</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Approve or reject user deposit requests
-              </p>
+        {/* Markets Tab */}
+        <TabsContent value="markets" className="space-y-6">
+          {/* Market Management Table */}
+          <div className="p-4 sm:p-5 rounded-xl bg-matkaDark-surface border border-border">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-matka text-lg tracking-wide text-foreground flex items-center gap-2">
+                <Store className="w-4 h-4 text-matkaGold" />
+                MARKET MANAGEMENT
+              </h3>
+              <span className="text-xs text-muted-foreground">
+                {markets.length} market{markets.length !== 1 ? 's' : ''}
+              </span>
             </div>
+            {marketsLoading ? (
+              <Skeleton className="h-32 rounded-xl bg-matkaDark-raised" />
+            ) : (
+              <MarketManagementTable markets={markets} />
+            )}
+          </div>
+
+          {/* Create Market Form */}
+          <div className="p-4 sm:p-5 rounded-xl bg-matkaDark-surface border border-border">
+            <h3 className="font-matka text-lg tracking-wide text-foreground mb-4 flex items-center gap-2">
+              <PlusCircle className="w-4 h-4 text-matkaGold" />
+              CREATE NEW MARKET
+            </h3>
+            <CreateMarketForm onSuccess={() => refetchMarkets()} />
+          </div>
+        </TabsContent>
+
+        {/* Results Tab */}
+        <TabsContent value="results">
+          <div className="p-4 sm:p-5 rounded-xl bg-matkaDark-surface border border-border">
+            <h3 className="font-matka text-lg tracking-wide text-foreground mb-4 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-matkaGold" />
+              DECLARE RESULT
+            </h3>
+            <ResultDeclarationForm markets={markets} />
+          </div>
+        </TabsContent>
+
+        {/* Deposits Tab */}
+        <TabsContent value="deposits">
+          <div className="p-4 sm:p-5 rounded-xl bg-matkaDark-surface border border-border">
+            <h3 className="font-matka text-lg tracking-wide text-foreground mb-4 flex items-center gap-2">
+              <ArrowDownCircle className="w-4 h-4 text-matkaGold" />
+              PENDING DEPOSITS
+            </h3>
             {depositsLoading ? (
-              <div className="p-6 space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-12 rounded-lg bg-matkaDark-raised" />
-                ))}
-              </div>
+              <Skeleton className="h-32 rounded-xl bg-matkaDark-raised" />
             ) : (
               <DepositRequestsTable requests={pendingDeposits ?? []} />
             )}
           </div>
         </TabsContent>
 
-        {/* Pending Withdrawals */}
+        {/* Withdrawals Tab */}
         <TabsContent value="withdrawals">
-          <div className="rounded-xl bg-matkaDark-surface border border-border overflow-hidden">
-            <div className="p-4 border-b border-border">
-              <h3 className="font-semibold text-foreground">Pending Withdrawal Requests</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Approve or reject user withdrawal requests
-              </p>
-            </div>
+          <div className="p-4 sm:p-5 rounded-xl bg-matkaDark-surface border border-border">
+            <h3 className="font-matka text-lg tracking-wide text-foreground mb-4 flex items-center gap-2">
+              <ArrowUpCircle className="w-4 h-4 text-matkaGold" />
+              PENDING WITHDRAWALS
+            </h3>
             {withdrawalsLoading ? (
-              <div className="p-6 space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-12 rounded-lg bg-matkaDark-raised" />
-                ))}
-              </div>
+              <Skeleton className="h-32 rounded-xl bg-matkaDark-raised" />
             ) : (
               <WithdrawalRequestsTable requests={pendingWithdrawals ?? []} />
             )}
-          </div>
-        </TabsContent>
-
-        {/* Result Declaration */}
-        <TabsContent value="results">
-          <div className="max-w-md">
-            <div className="rounded-xl bg-matkaDark-surface border border-border overflow-hidden">
-              <div className="p-4 border-b border-border">
-                <h3 className="font-semibold text-foreground">Declare Game Result</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Declare open/close numbers for a market
-                </p>
-              </div>
-              <div className="p-4">
-                <ResultDeclarationForm markets={markets ?? []} />
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-
-        {/* Market Management */}
-        <TabsContent value="markets">
-          <div className="space-y-6">
-            {/* Create market form */}
-            <div className="max-w-md rounded-xl bg-matkaDark-surface border border-border overflow-hidden">
-              <div className="p-4 border-b border-border">
-                <h3 className="font-semibold text-foreground">Create New Market</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Add a new Matka market</p>
-              </div>
-              <div className="p-4">
-                <CreateMarketForm onSuccess={() => {}} />
-              </div>
-            </div>
-
-            {/* Existing markets */}
-            <div className="rounded-xl bg-matkaDark-surface border border-border overflow-hidden">
-              <div className="p-4 border-b border-border">
-                <h3 className="font-semibold text-foreground">Manage Markets</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Open or close markets for betting
-                </p>
-              </div>
-              {marketsLoading ? (
-                <div className="p-6 space-y-3">
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-12 rounded-lg bg-matkaDark-raised" />
-                  ))}
-                </div>
-              ) : (
-                <MarketManagementTable markets={markets ?? []} />
-              )}
-            </div>
           </div>
         </TabsContent>
       </Tabs>

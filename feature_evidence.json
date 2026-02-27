@@ -2,16 +2,12 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-create-an-admin-panel-page-accessible-only-to-the-canister-controller-admin-principal-admin-can-declare-game-results-for-active-markets-manage-market-open-close-schedules-view-all-pending-deposit-and-withdrawal-requests-approve-or-reject-deposit-withdrawal-requests-and-view-overall-platform-statistics-total-bets-total-payout-active-users",
-      "featureTitle": "Create an Admin panel page accessible only to the canister controller/admin principal. Admin can: declare game results for active markets, manage market open/close schedules, view all pending deposit and withdrawal requests, approve or reject deposit/withdrawal requests, and view overall platform statistics (total bets, total payout, active users).",
+      "featureId": "feature-display-the-latest-declared-game-results-for-each-market-on-the-market-lobby-page-each-market-card-should-show-the-most-recent-open-number-close-number-and-jodi-result-beneath-the-market-name-and-schedule",
+      "featureTitle": "Display the latest declared game results for each market on the Market Lobby page. Each market card should show the most recent open number, close number, and jodi result beneath the market name and schedule.",
       "files": [
-        "frontend/src/components/DepositRequestsTable.tsx",
-        "frontend/src/components/MarketManagementTable.tsx",
-        "frontend/src/components/PlatformStatsCard.tsx",
-        "frontend/src/components/ResultDeclarationForm.tsx",
-        "frontend/src/components/WithdrawalRequestsTable.tsx",
-        "frontend/src/hooks/useAdminQueries.ts",
-        "frontend/src/pages/AdminPanel.tsx"
+        "frontend/src/components/MarketCard.tsx",
+        "frontend/src/hooks/useGameResultsQueries.ts",
+        "frontend/src/pages/MarketLobby.tsx"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -28,12 +24,12 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-build-a-market-lobby-page-showing-all-active-matka-markets-e-g-kalyan-milan-day-rajdhani-night-each-market-card-must-display-market-name-open-time-close-time-last-result-open-digit-jodi-close-digit-and-current-market-status-betting-open-waiting-for-result-result-declared-users-must-be-logged-in-via-internet-identity-to-place-bets",
-      "featureTitle": "Build a Market Lobby page showing all active Matka markets (e.g., Kalyan, Milan Day, Rajdhani Night). Each market card must display: market name, open time, close time, last result (open digit + Jodi + close digit), and current market status (betting open / waiting for result / result declared). Users must be logged in via Internet Identity to place bets.",
+      "featureId": "feature-add-a-dedicated-results-section-or-page-accessible-from-the-main-navigation-that-lists-all-markets-with-their-historical-game-results-in-reverse-chronological-order-date-market-name-open-number-close-number-jodi",
+      "featureTitle": "Add a dedicated 'Results' section or page accessible from the main navigation that lists all markets with their historical game results in reverse chronological order (date, market name, open number, close number, jodi).",
       "files": [
-        "frontend/src/components/MarketCard.tsx",
-        "frontend/src/hooks/useMarketQueries.ts",
-        "frontend/src/pages/MarketLobby.tsx"
+        "frontend/src/App.tsx",
+        "frontend/src/components/Layout.tsx",
+        "frontend/src/pages/Results.tsx"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -50,15 +46,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-build-a-bet-placement-page-for-each-market-the-page-must-support-all-bet-types-single-open-close-digit-0-9-jodi-00-99-single-panna-double-panna-and-triple-panna-user-selects-bet-type-enters-their-number-selection-enters-bet-amount-minimum-10-and-submits-show-current-wallet-balance-and-deduct-it-immediately-on-successful-bet-display-a-confirmation-with-expected-payout",
-      "featureTitle": "Build a Bet Placement page for each market. The page must support all bet types: Single (open/close digit 0–9), Jodi (00–99), Single Panna, Double Panna, and Triple Panna. User selects bet type, enters their number selection, enters bet amount (minimum ₹10), and submits. Show current wallet balance and deduct it immediately on successful bet. Display a confirmation with expected payout.",
+      "featureId": "feature-add-a-react-query-hook-e-g-usegameresultsqueries-to-fetch-all-declared-game-results-from-the-backend-actor-with-a-30-second-polling-interval-consistent-with-the-markets-query",
+      "featureTitle": "Add a React Query hook (e.g. useGameResultsQueries) to fetch all declared game results from the backend actor, with a 30-second polling interval consistent with the markets query.",
       "files": [
-        "frontend/src/components/BetConfirmationDialog.tsx",
-        "frontend/src/components/BetNumberInput.tsx",
-        "frontend/src/components/BetTypeSelector.tsx",
-        "frontend/src/hooks/useBetQueries.ts",
-        "frontend/src/pages/BetPlacement.tsx",
-        "frontend/src/utils/matkaOdds.ts"
+        "frontend/src/hooks/useGameResultsQueries.ts"
       ],
       "components": [
         "blob-storage@4.0.0",
@@ -71,87 +62,6 @@
       ],
       "testIds": [
         "REQ-4"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-build-a-wallet-page-where-users-can-view-current-balance-in-inr-submit-a-deposit-request-amount-utr-transaction-reference-number-submit-a-withdrawal-request-amount-upi-id-or-bank-details-and-view-the-full-transaction-history-including-bet-placements-winnings-deposits-and-withdrawals-with-statuses",
-      "featureTitle": "Build a Wallet page where users can: view current balance in INR, submit a deposit request (amount + UTR/transaction reference number), submit a withdrawal request (amount + UPI ID or bank details), and view the full transaction history including bet placements, winnings, deposits, and withdrawals with statuses.",
-      "files": [
-        "frontend/src/components/DepositForm.tsx",
-        "frontend/src/components/TransactionHistoryTable.tsx",
-        "frontend/src/components/WithdrawalForm.tsx",
-        "frontend/src/hooks/useWalletQueries.ts",
-        "frontend/src/pages/Wallet.tsx",
-        "frontend/src/utils/currency.ts"
-      ],
-      "components": [
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-build-a-my-bets-results-page-showing-the-authenticated-user-s-full-bet-history-each-row-shows-market-name-bet-type-selected-number-bet-amount-result-win-loss-pending-and-payout-amount-group-bets-by-date-with-the-most-recent-first",
-      "featureTitle": "Build a My Bets / Results page showing the authenticated user's full bet history. Each row shows: market name, bet type, selected number, bet amount, result (win/loss/pending), and payout amount. Group bets by date with the most recent first.",
-      "files": [
-        "frontend/src/components/BetHistoryTable.tsx",
-        "frontend/src/hooks/useBetHistoryQueries.ts",
-        "frontend/src/pages/MyBets.tsx"
-      ],
-      "components": [
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-apply-a-bold-indian-gambling-matka-visual-theme-across-the-entire-app-use-a-dark-background-with-deep-red-and-gold-as-primary-accent-colors-traditional-matka-wheel-playing-card-motifs-bold-typography-for-numbers-and-results-and-a-responsive-mobile-first-layout-replace-all-apk-related-branding-copy-and-navigation-with-matka-specific-equivalents",
-      "featureTitle": "Apply a bold Indian gambling/Matka visual theme across the entire app. Use a dark background with deep red and gold as primary accent colors, traditional Matka wheel/playing card motifs, bold typography for numbers and results, and a responsive mobile-first layout. Replace all APK-related branding, copy, and navigation with Matka-specific equivalents.",
-      "files": [
-        "frontend/index.html",
-        "frontend/src/App.tsx",
-        "frontend/src/components/AccessDeniedScreen.tsx",
-        "frontend/src/components/JobHistoryTable.tsx",
-        "frontend/src/components/Layout.tsx",
-        "frontend/src/components/LoginButton.tsx",
-        "frontend/src/components/ProfileSetupModal.tsx",
-        "frontend/src/hooks/usePatchJobQueries.ts",
-        "frontend/src/index.css",
-        "frontend/src/pages/APKEditor.tsx",
-        "frontend/src/pages/JobHistory.tsx",
-        "frontend/src/pages/MarketLobby.tsx",
-        "frontend/src/utils/apkParser.ts",
-        "frontend/src/utils/apkPatcher.ts",
-        "frontend/tailwind.config.js"
-      ],
-      "components": [
-        "blob-storage@4.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0",
-        "authorization@4.0.0"
-      ],
-      "testIds": [
-        "REQ-7"
       ],
       "confidence": "high"
     }

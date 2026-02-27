@@ -63,6 +63,18 @@ export interface Market {
   'openTime' : bigint,
 }
 export type MarketId = bigint;
+export interface MarketResults {
+  'results' : Array<Result>,
+  'marktetId' : string,
+}
+export interface Result {
+  'jodi' : string,
+  'time' : bigint,
+  'closeNumber' : string,
+  'marketId' : string,
+  'openNumber' : string,
+}
+export interface TimeRange { 'timeStart' : bigint, 'timeEnd' : bigint }
 export interface Transaction {
   'id' : TransactionId,
   'transactionType' : { 'withdrawalRequest' : WithdrawalRequestId } |
@@ -125,6 +137,7 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addResult' : ActorMethod<[string, string, string, string], undefined>,
   'approveDepositRequest' : ActorMethod<[DepositRequestId], boolean>,
   'approveWithdrawalRequest' : ActorMethod<[WithdrawalRequestId], boolean>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
@@ -162,6 +175,10 @@ export interface _SERVICE {
       'totalPayout' : bigint,
       'totalDeposits' : bigint,
     }
+  >,
+  'getResults' : ActorMethod<
+    [Array<string>, [] | [TimeRange]],
+    Array<MarketResults>
   >,
   'getTransactionHistory' : ActorMethod<[Principal], Array<Transaction>>,
   'getUserBets' : ActorMethod<[Principal], Array<Bet>>,
