@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Hindi:ital@0;1&family=Bebas+Neue&family=Poppins:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+
+    /* Matka Dark Theme - deep crimson & gold */
+    --background: 0.10 0.015 20;
+    --foreground: 0.95 0.01 60;
+    --card: 0.14 0.02 20;
+    --card-foreground: 0.95 0.01 60;
+    --popover: 0.16 0.025 20;
+    --popover-foreground: 0.95 0.01 60;
+    --primary: 0.72 0.22 30;
+    --primary-foreground: 0.98 0.005 60;
+    --secondary: 0.20 0.02 20;
+    --secondary-foreground: 0.90 0.01 60;
+    --muted: 0.18 0.015 20;
+    --muted-foreground: 0.55 0.03 40;
+    --accent: 0.78 0.18 75;
+    --accent-foreground: 0.10 0.01 20;
+    --destructive: 0.55 0.22 25;
+    --destructive-foreground: 0.98 0 0;
+    --border: 0.25 0.03 20;
+    --input: 0.20 0.02 20;
+    --ring: 0.72 0.22 30;
+
+    /* Custom Matka tokens */
+    --matka-red: 0.55 0.25 25;
+    --matka-red-bright: 0.65 0.28 28;
+    --matka-gold: 0.82 0.18 80;
+    --matka-gold-dim: 0.65 0.14 75;
+    --matka-dark: 0.10 0.015 20;
+    --matka-surface: 0.14 0.02 20;
+    --matka-surface-raised: 0.18 0.025 20;
+
+    --chart-1: 0.65 0.28 28;
+    --chart-2: 0.82 0.18 80;
+    --chart-3: 0.65 0.2 200;
+    --chart-4: 0.7 0.2 280;
+    --chart-5: 0.55 0.22 25;
+
+    --sidebar: 0.12 0.018 20;
+    --sidebar-foreground: 0.95 0.01 60;
+    --sidebar-primary: 0.65 0.28 28;
+    --sidebar-primary-foreground: 0.98 0.005 60;
+    --sidebar-accent: 0.20 0.02 20;
+    --sidebar-accent-foreground: 0.90 0.01 60;
+    --sidebar-border: 0.25 0.03 20;
+    --sidebar-ring: 0.65 0.28 28;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Poppins', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-matka {
+    font-family: 'Bebas Neue', 'Poppins', sans-serif;
+    letter-spacing: 0.05em;
+  }
+
+  .font-hindi {
+    font-family: 'Tiro Devanagari Hindi', serif;
+  }
+
+  .glow-red {
+    box-shadow:
+      0 0 10px oklch(0.65 0.28 28 / 0.5),
+      0 0 25px oklch(0.65 0.28 28 / 0.2);
+  }
+
+  .glow-red-strong {
+    box-shadow:
+      0 0 15px oklch(0.65 0.28 28 / 0.7),
+      0 0 40px oklch(0.65 0.28 28 / 0.35),
+      0 0 80px oklch(0.65 0.28 28 / 0.1);
+  }
+
+  .glow-gold {
+    box-shadow:
+      0 0 10px oklch(0.82 0.18 80 / 0.5),
+      0 0 25px oklch(0.82 0.18 80 / 0.2);
+  }
+
+  .text-glow-red {
+    text-shadow:
+      0 0 10px oklch(0.65 0.28 28 / 0.8),
+      0 0 25px oklch(0.65 0.28 28 / 0.4);
+  }
+
+  .text-glow-gold {
+    text-shadow:
+      0 0 10px oklch(0.82 0.18 80 / 0.8),
+      0 0 25px oklch(0.82 0.18 80 / 0.4);
+  }
+
+  .gold-border {
+    border-color: oklch(0.82 0.18 80 / 0.6);
+  }
+
+  .red-border {
+    border-color: oklch(0.65 0.28 28 / 0.6);
+  }
+
+  .bg-matka-pattern {
+    background-image:
+      radial-gradient(circle at 20% 50%, oklch(0.55 0.25 25 / 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, oklch(0.82 0.18 80 / 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 60% 80%, oklch(0.55 0.25 25 / 0.06) 0%, transparent 40%);
+  }
+
+  .card-matka {
+    background: oklch(0.14 0.02 20);
+    border: 1px solid oklch(0.25 0.03 20);
+    transition: all 0.25s ease;
+  }
+
+  .card-matka:hover {
+    border-color: oklch(0.82 0.18 80 / 0.5);
+    box-shadow:
+      0 0 12px oklch(0.82 0.18 80 / 0.2),
+      0 0 30px oklch(0.65 0.28 28 / 0.1);
+  }
+
+  .card-matka-active {
+    border-color: oklch(0.65 0.28 28 / 0.8) !important;
+    box-shadow:
+      0 0 15px oklch(0.65 0.28 28 / 0.4),
+      0 0 40px oklch(0.65 0.28 28 / 0.15) !important;
+  }
+
+  .btn-matka-primary {
+    background: linear-gradient(135deg, oklch(0.55 0.25 25), oklch(0.65 0.28 28));
+    border: 1px solid oklch(0.72 0.22 30 / 0.6);
+    color: oklch(0.98 0.005 60);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+  }
+
+  .btn-matka-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, oklch(0.60 0.27 26), oklch(0.70 0.30 29));
+    box-shadow: 0 0 15px oklch(0.65 0.28 28 / 0.5);
+  }
+
+  .btn-matka-gold {
+    background: linear-gradient(135deg, oklch(0.70 0.16 78), oklch(0.82 0.18 80));
+    border: 1px solid oklch(0.85 0.15 82 / 0.6);
+    color: oklch(0.10 0.01 20);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    transition: all 0.2s ease;
+  }
+
+  .btn-matka-gold:hover:not(:disabled) {
+    box-shadow: 0 0 15px oklch(0.82 0.18 80 / 0.5);
+  }
+
+  .scrollbar-matka::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-matka::-webkit-scrollbar-track {
+    background: oklch(0.12 0.018 20);
+  }
+
+  .scrollbar-matka::-webkit-scrollbar-thumb {
+    background: oklch(0.30 0.04 20);
+    border-radius: 3px;
+  }
+
+  .scrollbar-matka::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.65 0.28 28 / 0.6);
+  }
+
+  .status-open {
+    color: oklch(0.75 0.18 145);
+    background: oklch(0.75 0.18 145 / 0.12);
+    border: 1px solid oklch(0.75 0.18 145 / 0.3);
+  }
+
+  .status-closed {
+    color: oklch(0.55 0.03 40);
+    background: oklch(0.55 0.03 40 / 0.08);
+    border: 1px solid oklch(0.55 0.03 40 / 0.2);
+  }
+
+  .status-won {
+    color: oklch(0.75 0.18 145);
+  }
+
+  .status-lost {
+    color: oklch(0.65 0.28 28);
+  }
+
+  .status-pending {
+    color: oklch(0.82 0.18 80);
+  }
+
+  .divider-gold {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, oklch(0.82 0.18 80 / 0.5), transparent);
+  }
+}
